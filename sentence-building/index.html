@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Sentence Building V2 Intelligence</title>
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--ink:#111827;--muted:#667085;--line:#e5e7eb;--ok:#166534;--bad:#991b1b;--accent:#111827;--soft:#eef2f7}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial;color:var(--ink)}
+body{-webkit-user-select:none;user-select:none}
+input,textarea{-webkit-user-select:text;user-select:text}
+.app{max-width:720px;margin:auto;min-height:100vh;padding:14px 14px 96px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:4px 0 12px}
+h1{font-size:20px;margin:0}.small{font-size:12px;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:12px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.pill{display:inline-flex;padding:6px 10px;border-radius:999px;background:var(--soft);font-size:11px;font-weight:800;margin-bottom:10px}
+.prompt{font-size:24px;font-weight:800;line-height:1.3;margin:10px 0}
+.translation{font-size:14px;color:var(--muted);margin:8px 0}
+input{width:100%;padding:14px 15px;border:1px solid #cfd4dc;border-radius:12px;font-size:17px;outline:none;background:#fff}
+button,select{border:0;border-radius:12px;padding:12px 14px;font-size:14px;font-weight:750}
+button{cursor:pointer}.primary{background:var(--accent);color:#fff;width:100%;margin-top:10px}.secondary{background:var(--soft);color:var(--ink)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.feedback{margin-top:12px;padding:12px;border-radius:12px;font-size:14px;line-height:1.5}.feedback.ok{background:#ecfdf3;color:var(--ok)}.feedback.bad{background:#fef2f2;color:var(--bad)}
+.hidden{display:none!important}.progress{height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin:8px 0 2px}.progress>div{height:100%;background:#111827;width:0%;transition:.25s}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;text-align:center}.stat{padding:9px 5px;border:1px solid var(--line);border-radius:12px}.stat b{display:block;font-size:17px}.stat span{font-size:10px;color:var(--muted)}
+.timer{font-variant-numeric:tabular-nums;font-size:38px;font-weight:850;text-align:center;margin:10px 0}.tip{font-size:13px;line-height:1.5;color:var(--muted)}
+.bottom{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);border-top:1px solid var(--line);padding:9px 14px calc(9px + env(safe-area-inset-bottom));display:flex;gap:8px;justify-content:center}.bottom button{max-width:340px;flex:1}
+.badge{font-size:10px;font-weight:900;letter-spacing:.06em;color:var(--muted)}
+.skillrow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--line)}.skillrow:last-child{border-bottom:0}
+.dot{display:inline-block;width:9px;height:9px;border-radius:99px;background:#d1d5db;margin-right:6px}.dot.on{background:#111827}
+.rec{display:flex;align-items:center;gap:8px;margin-top:10px}.rec button{flex:1}.meter{height:7px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin-top:8px}.meter>div{height:100%;width:0%;background:#111827}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.chip{padding:6px 8px;border-radius:999px;background:#f3f4f6;font-size:11px}.chip.bad{background:#fee2e2;color:#991b1b}.chip.ok{background:#dcfce7;color:#166534}
+@media(max-width:420px){.stats{grid-template-columns:repeat(2,1fr)}.grid3{grid-template-columns:1fr}.prompt{font-size:22px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div><div class="badge">V2 INTELLIGENCE</div><h1>Sentence Building</h1></div>
+    <a href="../" class="small">English Hub</a>
+  </div>
+
+  <section id="home">
+    <div class="card">
+      <span class="pill">SESSÃO ADAPTATIVA</span>
+      <div class="prompt" style="font-size:21px">Ouvir → responder → corrigir → repetir → avançar.</div>
+      <p class="tip">O vocabulário é liberado automaticamente. Itens dominados aparecem menos; erros e respostas lentas retornam em novas variações.</p>
+      <div class="stats">
+        <div class="stat"><b id="sDone">0</b><span>respostas</span></div>
+        <div class="stat"><b id="sIndependent">0</b><span>sozinho</span></div>
+        <div class="stat"><b id="sMastered">0</b><span>dominados</span></div>
+        <div class="stat"><b id="sLevel">1</b><span>nível</span></div>
+      </div>
+      <button class="primary" id="startBtn">Iniciar sessão inteligente</button>
+    </div>
+
+    <div class="card">
+      <b>Áudio</b>
+      <p class="tip">A V2 tenta selecionar automaticamente uma voz inglesa disponível no aparelho.</p>
+      <div class="grid2">
+        <button class="secondary" id="testVoice">Testar voz</button>
+        <select id="speedSelect">
+          <option value="0.72">Lento</option>
+          <option value="0.9" selected>Normal</option>
+          <option value="1.02">Rápido</option>
+        </select>
+      </div>
+      <div class="small" id="voiceStatus" style="margin-top:8px">Carregando vozes...</div>
+    </div>
+
+    <div class="card">
+      <b>Progressão automática</b>
+      <div id="levels"></div>
+    </div>
+  </section>
+
+  <section id="trainer" class="hidden">
+    <div class="card">
+      <div class="small" id="stepLabel"></div>
+      <div class="progress"><div id="bar"></div></div>
+    </div>
+
+    <div class="card">
+      <span class="pill" id="modePill">BUILD</span>
+      <div class="prompt" id="prompt"></div>
+      <div class="translation hidden" id="translation"></div>
+      <div class="chips" id="chips"></div>
+
+      <div id="textWrap">
+        <input id="answer" autocomplete="off" autocapitalize="sentences" placeholder="Fale primeiro. Depois digite.">
+        <button class="primary" id="checkBtn">Verificar</button>
+      </div>
+
+      <div id="rapidWrap" class="hidden">
+        <div class="timer" id="timer">5.0</div>
+        <p class="tip">Responda em voz alta antes do tempo terminar.</p>
+      </div>
+
+      <div class="grid2">
+        <button class="secondary" id="listenBtn">Ouvir</button>
+        <button class="secondary" id="slowBtn">Ouvir devagar</button>
+      </div>
+
+      <div class="grid2">
+        <button class="secondary" id="hintBtn">Dica</button>
+        <button class="secondary" id="modelBtn">Resposta-modelo</button>
+      </div>
+
+      <div class="card" style="margin:12px 0 0;padding:12px;background:#fafafa">
+        <b class="small">SPEAKING</b>
+        <div class="rec">
+          <button class="secondary" id="recordBtn">Gravar minha voz</button>
+          <button class="secondary" id="playBtn" disabled>Ouvir gravação</button>
+        </div>
+        <audio id="audioPlayback" class="hidden"></audio>
+        <div class="grid2">
+          <button class="secondary" id="recognizeBtn">Reconhecer minha fala</button>
+          <button class="secondary" id="stopRecognizeBtn">Parar</button>
+        </div>
+        <div class="small" id="speechStatus" style="margin-top:8px">Reconhecimento depende do navegador. Chrome/Edge costumam oferecer melhor suporte.</div>
+        <div id="speechResult" class="translation"></div>
+      </div>
+
+      <div id="feedback" class="feedback hidden"></div>
+      <button class="primary hidden" id="nextBtn">Próximo</button>
+    </div>
+  </section>
+
+  <section id="summary" class="hidden">
+    <div class="card">
+      <span class="pill">SESSÃO CONCLUÍDA</span>
+      <div class="prompt" style="font-size:22px">Resumo</div>
+      <div class="stats">
+        <div class="stat"><b id="rDone">0</b><span>itens</span></div>
+        <div class="stat"><b id="rIndependent">0</b><span>sozinho</span></div>
+        <div class="stat"><b id="rHelp">0</b><span>com ajuda</span></div>
+        <div class="stat"><b id="rUnlocked">0</b><span>nível</span></div>
+      </div>
+      <p class="tip" id="summaryText"></p>
+      <button class="primary" id="againBtn">Nova sessão</button>
+    </div>
+    <div class="card"><b>Pontos para reteste</b><div id="reviewList" class="tip"></div></div>
+  </section>
+
+  <div class="bottom">
+    <button class="secondary" id="resetBtn">Reiniciar progresso</button>
+  </div>
+</div>
+
+<script>
+const LEVELS = [
+ {id:1,name:'Base pessoal',unlockAt:0,words:[
+  ['nurse','enfermeiro(a)'],['work','trabalhar'],['hospital','hospital'],['family','família'],['children','filhos'],['home','casa'],['study','estudar'],['English','inglês'],['help','ajudar'],['need','precisar'],['live','morar'],['day','dia']
+ ]},
+ {id:2,name:'Rotina',unlockAt:8,words:[
+  ['morning','manhã'],['afternoon','tarde'],['night','noite'],['shift','plantão/turno'],['usually','geralmente'],['sometimes','às vezes'],['always','sempre'],['never','nunca'],['start','começar'],['finish','terminar'],['eat','comer'],['sleep','dormir'],['drive','dirigir'],['team','equipe']
+ ]},
+ {id:3,name:'Enfermagem',unlockAt:18,words:[
+  ['patient','paciente'],['vital signs','sinais vitais'],['assess','avaliar'],['check','verificar'],['pain','dor'],['medication','medicação'],['blood pressure','pressão arterial'],['heart rate','frequência cardíaca'],['oxygen','oxigênio'],['symptoms','sintomas'],['condition','condição'],['monitor','monitorar'],['care','cuidado'],['record','registrar'],['treatment','tratamento']
+ ]},
+ {id:4,name:'Urgência e emergência',unlockAt:32,words:[
+  ['emergency','emergência'],['ambulance','ambulância'],['trauma','trauma'],['bleeding','sangramento'],['chest pain','dor no peito'],['shortness of breath','falta de ar'],['unconscious','inconsciente'],['airway','via aérea'],['breathing','respiração'],['circulation','circulação'],['stretcher','maca'],['defibrillator','desfibrilador'],['CPR','RCP'],['scene','cena'],['transport','transportar'],['stable','estável'],['critical','crítico']
+ ]},
+ {id:5,name:'Hospital e APH',unlockAt:50,words:[
+  ['emergency room','pronto-socorro'],['intensive care unit','UTI'],['monitoring','monitorização'],['procedure','procedimento'],['handover','passagem de caso'],['equipment','equipamento'],['supplies','suprimentos'],['protocol','protocolo'],['risk','risco'],['safety','segurança'],['infection control','controle de infecção'],['documentation','documentação'],['transfer','transferência'],['referral','encaminhamento'],['response time','tempo de resposta']
+ ]},
+ {id:6,name:'Offshore',unlockAt:70,words:[
+  ['offshore','offshore'],['platform','plataforma'],['vessel','embarcação'],['crew','tripulação'],['medical room','sala médica'],['occupational health','saúde ocupacional'],['medical evacuation','evacuação médica'],['MEDEVAC','MEDEVAC'],['helicopter','helicóptero'],['PPE','EPI'],['hazard','perigo'],['incident','incidente'],['permit to work','permissão de trabalho'],['confined space','espaço confinado'],['emergency drill','simulado de emergência']
+ ]},
+ {id:7,name:'Entrevista profissional',unlockAt:92,words:[
+  ['experience','experiência'],['strength','ponto forte'],['challenge','desafio'],['responsibility','responsabilidade'],['leadership','liderança'],['decision-making','tomada de decisão'],['teamwork','trabalho em equipe'],['improve','melhorar'],['learn','aprender'],['develop','desenvolver'],['opportunity','oportunidade'],['career','carreira'],['qualified','qualificado'],['training','treinamento'],['certification','certificação']
+ ]}
+];
+
+const STRUCTURES = [
+ {id:'iam', min:1, q:'Who are you?', model:'I am a nurse.', build:'Complete: I ___ a nurse.', ans:['am']},
+ {id:'iwork', min:1, q:'Where do you work?', model:'I work at a hospital.', build:'Complete: I ___ at a hospital.', ans:['work']},
+ {id:'ihave', min:1, q:'Do you have children?', model:'Yes, I have two children.', build:'Complete: I ___ two children.', ans:['have']},
+ {id:'ineed', min:1, q:'What do you need?', model:'I need some help.', build:'Complete: I ___ some help.', ans:['need']},
+ {id:'iusually', min:2, q:'What do you usually do in the morning?', model:'I usually study English in the morning.', build:'Complete: I ___ study English in the morning.', ans:['usually']},
+ {id:'idont', min:2, q:'Do you work there every day?', model:"No, I don't work there every day.", build:"Complete: I ___ work there every day.", ans:["don't",'do not']},
+ {id:'check', min:3, q:'What do you check first?', model:"I check the patient's vital signs first.", build:"Complete: I check the patient's ___.", ans:['vital signs']},
+ {id:'assess', min:3, q:'What do you assess first?', model:"I assess the patient's condition first.", build:"Complete: I assess the patient's ___.", ans:['condition']},
+ {id:'pain', min:3, q:'What do you ask a patient with pain?', model:'I ask the patient about the pain.', build:'Complete: I ask the patient about the ___.', ans:['pain']},
+ {id:'emergency', min:4, q:'What do you do in an emergency?', model:'I assess the patient and provide emergency care.', build:'Complete: I provide ___ care.', ans:['emergency']},
+ {id:'ambulance', min:4, q:'Where do you work during pre-hospital care?', model:'I work on an ambulance.', build:'Complete: I work on an ___.', ans:['ambulance']},
+ {id:'abc', min:4, q:'What do you assess first in a critical patient?', model:'I assess airway, breathing, and circulation first.', build:'Complete: I assess airway, breathing, and ___.', ans:['circulation']},
+ {id:'handover', min:5, q:'What do you do before transferring a patient?', model:'I give a clear patient handover.', build:'Complete: I give a clear patient ___.', ans:['handover']},
+ {id:'protocol', min:5, q:'How do you improve patient safety?', model:'I follow protocols and document care correctly.', build:'Complete: I follow ___ and document care correctly.', ans:['protocols','protocol']},
+ {id:'offshore', min:6, q:'Why do you want to work offshore?', model:'I want to use my emergency and occupational health experience offshore.', build:'Complete: I want to work ___.', ans:['offshore']},
+ {id:'medevac', min:6, q:'What do you do if a patient needs advanced care onshore?', model:'I prepare the patient for medical evacuation.', build:'Complete: I prepare the patient for medical ___.', ans:['evacuation']},
+ {id:'ppe', min:6, q:'What do you check before entering a hazardous area?', model:'I check the hazards and use the correct PPE.', build:'Complete: I use the correct ___.', ans:['PPE','ppe']},
+ {id:'experience', min:7, q:'Tell me about your professional experience.', model:'I have extensive experience in emergency and pre-hospital care.', build:'Complete: I have extensive ___ in emergency care.', ans:['experience']},
+ {id:'strength', min:7, q:'What is one of your strengths?', model:'One of my strengths is decision-making under pressure.', build:'Complete: One of my ___ is teamwork.', ans:['strengths']},
+ {id:'learn', min:7, q:'Why should we hire you?', model:'I can contribute with emergency experience, teamwork, and willingness to learn.', build:'Complete: I am willing to ___.', ans:['learn']}
+];
+
+const EXTRA_SENTENCES = [
+ ['I work during the night shift.','Eu trabalho durante o plantão noturno.',2],
+ ['I usually start my shift in the morning.','Eu geralmente começo meu plantão pela manhã.',2],
+ ["I check the patient's blood pressure.",'Eu verifico a pressão arterial do paciente.',3],
+ ["I assess the patient's symptoms.",'Eu avalio os sintomas do paciente.',3],
+ ['I monitor the patient during transport.','Eu monitoro o paciente durante o transporte.',4],
+ ['I provide emergency care on the ambulance.','Eu presto atendimento de emergência na ambulância.',4],
+ ['I make sure the equipment is ready.','Eu me certifico de que o equipamento está pronto.',5],
+ ['I document the care provided.','Eu registro o cuidado prestado.',5],
+ ['I follow safety procedures offshore.','Eu sigo procedimentos de segurança offshore.',6],
+ ['I participate in emergency drills.','Eu participo de simulados de emergência.',6],
+ ['I have experience working under pressure.','Eu tenho experiência trabalhando sob pressão.',7],
+ ['I want to develop my career in offshore nursing.','Eu quero desenvolver minha carreira na enfermagem offshore.',7]
+];
+
+const DEFAULT_STATE={done:0,independent:0,help:0,mastery:{},wordMastery:{},reviews:[],lastLevel:1};
+let state=JSON.parse(localStorage.getItem('sb_v2_state')||JSON.stringify(DEFAULT_STATE));
+let session={items:[],i:0,done:0,independent:0,help:0,reviews:[],usedHint:false,start:0};
+let rapidTimer=null, mediaRecorder=null, chunks=[],audioURL=null, recognition=null;
+let voices=[], selectedVoice=null;
+
+const $=id=>document.getElementById(id);
+const show=(el,yes=true)=>el.classList.toggle('hidden',!yes);
+const normalize=s=>(s||'').toLowerCase().trim().replace(/[’]/g,"'").replace(/[.!?,]/g,'').replace(/\s+/g,' ');
+const esc=s=>(s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+
+function save(){localStorage.setItem('sb_v2_state',JSON.stringify(state));updateHome()}
+function masteredCount(){return Object.values(state.mastery).filter(v=>v>=3).length + Object.values(state.wordMastery).filter(v=>v>=3).length}
+function currentLevel(){
+ const score=masteredCount();
+ let lv=1;
+ LEVELS.forEach(l=>{if(score>=l.unlockAt)lv=l.id});
+ return lv;
+}
+function updateHome(){
+ $('sDone').textContent=state.done||0;$('sIndependent').textContent=state.independent||0;$('sMastered').textContent=masteredCount();$('sLevel').textContent=currentLevel();
+ $('levels').innerHTML=LEVELS.map(l=>`<div class="skillrow"><div><span class="dot ${currentLevel()>=l.id?'on':''}"></span><b>Nível ${l.id}</b> · ${l.name}</div><span class="small">${currentLevel()>=l.id?'liberado':l.unlockAt+' domínios'}</span></div>`).join('');
+}
+
+function loadVoices(){
+ voices=speechSynthesis.getVoices();
+ const en=voices.filter(v=>/^en(-|_)/i.test(v.lang));
+ selectedVoice=en.find(v=>/Google|Microsoft|Samantha|Daniel|Karen|Zira|Aria|Jenny|Guy/i.test(v.name))||en[0]||voices[0]||null;
+ $('voiceStatus').textContent=selectedVoice?`Voz: ${selectedVoice.name} (${selectedVoice.lang})`:'Nenhuma voz do sistema encontrada.';
+}
+if('speechSynthesis' in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
+
+function speak(text, slow=false){
+ if(!('speechSynthesis' in window)){feedback(false,'Seu navegador não oferece síntese de voz.');return}
+ speechSynthesis.cancel();
+ const u=new SpeechSynthesisUtterance(text.replace(/^Complete:\s*/,'').replace(/___/g,'...'));
+ if(selectedVoice)u.voice=selectedVoice;
+ u.lang=(selectedVoice&&selectedVoice.lang)||'en-US';
+ const base=parseFloat($('speedSelect').value||'0.9');u.rate=slow?Math.max(.55,base-.22):base;
+ u.pitch=1;u.volume=1;speechSynthesis.speak(u);
+}
+$('testVoice').onclick=()=>speak('I work in emergency care and I assess patients every day.');
+
+function unlockedWords(){
+ const lv=currentLevel();return LEVELS.filter(l=>l.id<=lv).flatMap(l=>l.words.map(w=>({word:w[0],pt:w[1],level:l.id})));
+}
+function weightFor(id,type='s'){
+ const map=type==='w'?state.wordMastery:state.mastery; const m=map[id]||0;
+ return m>=3?1:m===2?2:m===1?3:5;
+}
+function pickWeighted(arr,n,keyFn,type){
+ const pool=[...arr],out=[];
+ while(pool.length&&out.length<n){
+  const weighted=[];pool.forEach((x,idx)=>{for(let k=0;k<weightFor(keyFn(x),type);k++)weighted.push(idx)});
+  const idx=weighted[Math.floor(Math.random()*weighted.length)];
+  out.push(pool[idx]);pool.splice(idx,1);
+ } return out;
+}
+function generateSession(){
+ const lv=currentLevel(), words=unlockedWords();
+ const structs=STRUCTURES.filter(s=>s.min<=lv);
+ const items=[];
+ pickWeighted(structs,7,x=>x.id,'s').forEach((s,i)=>{
+   if(i%3===0) items.push({type:'rapid',id:s.id,prompt:s.q,model:s.model,audio:s.q});
+   else items.push({type:'build',id:s.id,prompt:s.build,model:s.model,answers:s.ans,audio:s.model});
+ });
+ pickWeighted(words,4,x=>x.word,'w').forEach(w=>items.push({type:'recognize',id:'word:'+w.word,word:w.word,prompt:w.word,model:`${w.word} = ${w.pt}`,answers:[w.pt],audio:w.word}));
+ EXTRA_SENTENCES.filter(x=>x[2]<=lv).sort(()=>Math.random()-.5).slice(0,2).forEach((x,j)=>items.push({type:'listen',id:'listen:'+x[0],prompt:'Ouça e digite a frase que você entendeu.',model:x[0],answers:[x[0]],audio:x[0],translation:x[1]}));
+ state.reviews.slice(-5).forEach((r,j)=>{if(items.length<15)items.push({type:'review',id:'review:'+j,prompt:r.prompt||'Reteste',model:r.model,answers:r.answers||[r.model],audio:r.audio||r.model})});
+ return items.sort(()=>Math.random()-.5).slice(0,15);
+}
+function start(){
+ session={items:generateSession(),i:0,done:0,independent:0,help:0,reviews:[],usedHint:false,start:Date.now()};
+ show($('home'),false);show($('summary'),false);show($('trainer'),true);render();
+}
+function render(){
+ clearInterval(rapidTimer);
+ const ex=session.items[session.i];session.usedHint=false;
+ $('stepLabel').textContent=`Item ${session.i+1} de ${session.items.length}`;$('bar').style.width=(session.i/session.items.length*100)+'%';
+ $('modePill').textContent=({build:'BUILD',rapid:'RAPID RESPONSE',recognize:'VOCABULARY',listen:'LISTENING',review:'RETEST'})[ex.type]||ex.type.toUpperCase();
+ $('prompt').textContent=ex.prompt;$('answer').value='';$('speechResult').textContent='';$('chips').innerHTML='';
+ show($('translation'),false);show($('feedback'),false);show($('nextBtn'),false);show($('textWrap'),ex.type!=='rapid');show($('rapidWrap'),ex.type==='rapid');
+ $('checkBtn').classList.remove('hidden');
+ if(ex.type==='recognize')$('answer').placeholder='Digite o significado em português';
+ else if(ex.type==='listen'){$('answer').placeholder='Digite em inglês o que você ouviu';setTimeout(()=>speak(ex.audio),350)}
+ else $('answer').placeholder='Fale primeiro. Depois digite.';
+ if(ex.type==='rapid'){startRapid();setTimeout(()=>speak(ex.audio),200)}
+}
+function startRapid(){
+ let t=5.0;$('timer').textContent=t.toFixed(1);
+ rapidTimer=setInterval(()=>{t-=.1;if(t<=0){t=0;clearInterval(rapidTimer)}$('timer').textContent=t.toFixed(1)},100);
+}
+function feedback(ok,msg){const f=$('feedback');f.className='feedback '+(ok?'ok':'bad');f.textContent=msg;show(f,true)}
+function mark(ex,ok,help=false){
+ session.done++;state.done++;
+ if(ok&&!help){session.independent++;state.independent++}
+ if(help){session.help++;state.help++}
+ const map=ex.type==='recognize'?state.wordMastery:state.mastery;
+ const key=ex.type==='recognize'?ex.word:ex.id;
+ map[key]=Math.max(0,(map[key]||0)+(ok&&!help?1:-1));
+ if(!ok||help){const rev={prompt:ex.prompt,model:ex.model,answers:ex.answers||[ex.model],audio:ex.audio};session.reviews.push(rev);state.reviews.push(rev);state.reviews=state.reviews.slice(-30)}
+ save();
+}
+function compareWords(spoken,model){
+ const a=normalize(spoken).split(' '),b=normalize(model).split(' ');let html='',hits=0;
+ b.forEach(w=>{const ok=a.includes(w);if(ok)hits++;html+=`<span class="chip ${ok?'ok':'bad'}">${esc(w)}</span>`});
+ $('chips').innerHTML=html;return Math.round(hits/Math.max(1,b.length)*100);
+}
+$('checkBtn').onclick=()=>{
+ const ex=session.items[session.i],ans=normalize($('answer').value);if(!ans)return feedback(false,'Fale primeiro e depois digite sua resposta.');
+ const expected=ex.answers||[ex.model];const ok=expected.some(a=>normalize(a)===ans);
+ if(ok){feedback(true,'Correto. '+ex.model);mark(ex,true,session.usedHint)}
+ else{compareWords(ans,ex.model);feedback(false,'Ainda não. Modelo: '+ex.model);mark(ex,false,true)}
+ show($('nextBtn'),true);show($('checkBtn'),false);
+}
+$('hintBtn').onclick=()=>{const ex=session.items[session.i];session.usedHint=true;$('translation').textContent=ex.translation||('Primeira pista: '+ex.model.split(' ').slice(0,3).join(' ')+' ...');show($('translation'),true)}
+$('modelBtn').onclick=()=>{const ex=session.items[session.i];session.usedHint=true;feedback(false,'Modelo: '+ex.model);speak(ex.model)}
+$('listenBtn').onclick=()=>speak(session.items[session.i].audio||session.items[session.i].model);
+$('slowBtn').onclick=()=>speak(session.items[session.i].audio||session.items[session.i].model,true);
+$('nextBtn').onclick=()=>{session.i++;if(session.i>=session.items.length)finish();else render()}
+
+$('rapidWrap').onclick=e=>{
+ if(e.target.id==='rapidWrap'||e.target.id==='timer')return;
+}
+$('rapidWrap').insertAdjacentHTML('beforeend','<div class="grid2"><button class="secondary" id="rapidOk">Consegui falar</button><button class="secondary" id="rapidFail">Travei</button></div>');
+document.addEventListener('click',e=>{
+ if(e.target.id==='rapidOk'){clearInterval(rapidTimer);const ex=session.items[session.i];feedback(true,'Modelo: '+ex.model);mark(ex,true,false);show($('nextBtn'),true);show($('rapidWrap'),false)}
+ if(e.target.id==='rapidFail'){clearInterval(rapidTimer);const ex=session.items[session.i];feedback(false,'Reteste necessário. Modelo: '+ex.model);mark(ex,false,true);show($('nextBtn'),true);show($('rapidWrap'),false)}
+});
+
+async function toggleRecord(){
+ if(mediaRecorder&&mediaRecorder.state==='recording'){mediaRecorder.stop();$('recordBtn').textContent='Gravar minha voz';return}
+ try{
+   const stream=await navigator.mediaDevices.getUserMedia({audio:true});chunks=[];mediaRecorder=new MediaRecorder(stream);
+   mediaRecorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
+   mediaRecorder.onstop=()=>{const blob=new Blob(chunks,{type:mediaRecorder.mimeType||'audio/webm'});if(audioURL)URL.revokeObjectURL(audioURL);audioURL=URL.createObjectURL(blob);$('audioPlayback').src=audioURL;$('playBtn').disabled=false;stream.getTracks().forEach(t=>t.stop())};
+   mediaRecorder.start();$('recordBtn').textContent='Parar gravação';$('speechStatus').textContent='Gravando...';
+ }catch(err){$('speechStatus').textContent='Não foi possível acessar o microfone. Verifique a permissão do navegador.'}
+}
+$('recordBtn').onclick=toggleRecord;$('playBtn').onclick=()=>$('audioPlayback').play();
+
+function setupRecognition(){
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return null;
+ const r=new SR();r.lang='en-US';r.interimResults=false;r.continuous=false;
+ r.onstart=()=>{$('speechStatus').textContent='Ouvindo... fale agora.'};
+ r.onerror=e=>{$('speechStatus').textContent='Falha no reconhecimento: '+e.error};
+ r.onend=()=>{if($('speechStatus').textContent.startsWith('Ouvindo'))$('speechStatus').textContent='Reconhecimento encerrado.'};
+ r.onresult=e=>{
+  const spoken=e.results[0][0].transcript,conf=e.results[0][0].confidence;const ex=session.items[session.i],score=compareWords(spoken,ex.model);
+  $('speechResult').innerHTML=`Reconhecido: <b>${esc(spoken)}</b><br>Similaridade por palavras: <b>${score}%</b>${conf?` · confiança do navegador: ${Math.round(conf*100)}%`:''}`;
+  $('speechStatus').textContent=score>=80?'Boa inteligibilidade. Compare com o modelo.':'Há palavras diferentes ou não reconhecidas. Repita devagar e depois em velocidade normal.';
+ };
+ return r;
+}
+$('recognizeBtn').onclick=()=>{if(!recognition)recognition=setupRecognition();if(!recognition){$('speechStatus').textContent='Este navegador não oferece reconhecimento de fala. Use Chrome/Edge para testar este recurso.';return}try{recognition.start()}catch(e){}}
+$('stopRecognizeBtn').onclick=()=>{if(recognition)recognition.stop()}
+
+function finish(){
+ show($('trainer'),false);show($('summary'),true);
+ $('rDone').textContent=session.done;$('rIndependent').textContent=session.independent;$('rHelp').textContent=session.help;$('rUnlocked').textContent=currentLevel();
+ const pct=session.done?Math.round(session.independent/session.done*100):0;
+ $('summaryText').textContent=`${pct}% das respostas foram realizadas sem ajuda. O próximo treino continuará priorizando pontos ainda não dominados e liberará novo vocabulário conforme seus acertos.`;
+ $('reviewList').innerHTML=session.reviews.length?session.reviews.slice(0,8).map(r=>`<div class="skillrow"><span>${esc(r.prompt)}</span><span class="small">${esc(r.model)}</span></div>`).join(''):'Nenhum ponto crítico nesta sessão.';
+ updateHome();
+}
+$('startBtn').onclick=start;$('againBtn').onclick=start;
+$('resetBtn').onclick=()=>{if(confirm('Apagar todo o progresso salvo neste aparelho?')){state=JSON.parse(JSON.stringify(DEFAULT_STATE));save();show($('trainer'),false);show($('summary'),false);show($('home'),true)}}
+updateHome();
+if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js'))}
+</script>
+</body>
+</html>
