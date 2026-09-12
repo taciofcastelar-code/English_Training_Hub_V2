@@ -1,0 +1,7 @@
+export const exercises=[
+{id:'WR-B1-001',skill:'writing',subskills:['sentence_construction'],context:'GEN',level:'B1-D1',type:'translation',prompt:'Traduza: Eu sou enfermeiro.',expectedAnswers:['i am a nurse'],targetTime:8},
+{id:'WR-ER-002',skill:'writing',subskills:['sentence_construction','grammar'],context:'ER',level:'B1-D1',type:'translation',prompt:'Traduza: Eu avalio primeiro a condição do paciente.',expectedAnswers:["i assess the patient's condition first"],targetTime:12},
+{id:'WR-CLIN-003',skill:'writing',subskills:['vocabulary'],context:'CLIN',level:'B1-D1',type:'translation',prompt:'Traduza: Eu verifico os sinais vitais do paciente.',expectedAnswers:["i check the patient's vital signs"],targetTime:12},
+{id:'RD-OFF-004',skill:'reading',subskills:['comprehension'],context:'OFF',level:'B1-D1',type:'short_answer',prompt:'The nurse checks the emergency equipment before the shift. What does the nurse check?',expectedAnswers:['the emergency equipment','emergency equipment'],targetTime:10},
+{id:'WR-APH-005',skill:'writing',subskills:['sentence_construction'],context:'APH',level:'B1-D1',type:'translation',prompt:'Traduza: Eu monitoro o paciente durante o transporte.',expectedAnswers:['i monitor the patient during transport'],targetTime:12}
+];
